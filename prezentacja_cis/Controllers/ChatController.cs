@@ -11,14 +11,30 @@ using prezentacja_cis.Models;
 namespace prezentacja_cis.Controllers
 {
     [Route("[controller]")]
-    public class ChatController
+    [ApiController]
+    public class ChatController : ControllerBase
     {
+        [HttpGet]
+        public IEnumerable<object> Rooms()
+        {
+            using (var ctx = new ChatContext())
+            {
+                return ctx.Rooms.AsNoTracking()
+                    .ToList()
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.Name
+                    });
+            }
+        }
+
         [HttpGet("{roomId}")]
         public IEnumerable<MessageEntity> Messages(int roomId)
         {
             using (var ctx = new ChatContext())
             {
-                var room = ctx.Rooms
+                var room = ctx.Rooms.AsNoTracking()
                     .Include(x => x.Messsages)
                     .FirstOrDefault(r => r.Id == roomId);
                 if (room == null)
@@ -28,29 +44,22 @@ namespace prezentacja_cis.Controllers
             }
         }
 
-        [HttpGet]
-        public IEnumerable<object> Rooms()
-        {
-            using (var ctx = new ChatContext())
-            {
-                return ctx.Rooms.ToList().Select((x, i) => new {x.Id, x.Name});
-            }
-        }
-
         [HttpPost("{roomId}/[action]")]
         public IActionResult SendMessage(int roomId, MessageEntity m)
         {
             using (var ctx = new ChatContext())
             {
-                var room = ctx.Rooms.Include(x => x.Messsages).FirstOrDefault(r => r.Id == roomId);
+                var room = ctx.Rooms
+                    .Include(x => x.Messsages)
+                    .FirstOrDefault(r => r.Id == roomId);
                 if (room == null)
-                    return new BadRequestResult();
+                    return BadRequest();
 
                 var message = Mapper.Map<Message>(m);
                 room.Messsages.Add(message);
                 ctx.SaveChanges();
 
-                return new OkResult();
+                return Ok();
             }
         }
 
@@ -58,12 +67,12 @@ namespace prezentacja_cis.Controllers
         public IActionResult AddRoom(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                return new BadRequestResult();
+                return BadRequest();
 
             using (var ctx = new ChatContext())
             {
                 if (ctx.Rooms.Any(x => x.Name == name))
-                    return new BadRequestResult();
+                    return BadRequest();
 
                 ctx.Rooms.Add(new Room
                 {
@@ -71,7 +80,7 @@ namespace prezentacja_cis.Controllers
                     Name = name
                 });
                 ctx.SaveChanges();
-                return new OkResult();
+                return Ok();
             }
         }
     }
@@ -81,31 +90,14 @@ namespace prezentacja_cis.Controllers
     {
         public string User { get; set; }
         public string Message { get; set; }
-        public DateTime SentAt { get; set; }
     }
 
     public class MessageEntityValidator : AbstractValidator<MessageEntity>
     {
         public MessageEntityValidator()
         {
-            RuleFor(x => x.Message).NotEmpty();
             RuleFor(x => x.User).NotEmpty().MinimumLength(5);
-        }
-    }
-
-    public class ChatAutoMapperProfile : Profile
-    {
-        public ChatAutoMapperProfile()
-        {
-            CreateMap<MessageEntity, Message>()
-                .ForMember(prop => prop.Username, opt => opt.MapFrom(src => src.User))
-                .ForMember(prop => prop.Text, opt => opt.MapFrom(src => src.Message))
-                .ForAllOtherMembers(opt => opt.Ignore());
-
-            CreateMap<Message, MessageEntity>()
-                .ForMember(prop => prop.User, opt => opt.MapFrom(src => src.Username))
-                .ForMember(prop => prop.Message, opt => opt.MapFrom(src => src.Text))
-                .ForMember(prop => prop.SentAt, opt => opt.MapFrom(src => src.SentAt));
+            RuleFor(x => x.Message).NotEmpty();
         }
     }
 }

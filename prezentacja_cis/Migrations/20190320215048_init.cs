@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace prezentacja_cis.Migrations
 {
@@ -28,7 +27,6 @@ namespace prezentacja_cis.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Username = table.Column<string>(nullable: true),
                     Text = table.Column<string>(nullable: true),
-                    SentAt = table.Column<DateTime>(nullable: false),
                     RoomId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
@@ -39,7 +37,7 @@ namespace prezentacja_cis.Migrations
                         column: x => x.RoomId,
                         principalTable: "Rooms",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

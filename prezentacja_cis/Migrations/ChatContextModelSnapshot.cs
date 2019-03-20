@@ -23,8 +23,6 @@ namespace prezentacja_cis.Migrations
 
                     b.Property<int?>("RoomId");
 
-                    b.Property<DateTime>("SentAt");
-
                     b.Property<string>("Text");
 
                     b.Property<string>("Username");
@@ -52,7 +50,8 @@ namespace prezentacja_cis.Migrations
                 {
                     b.HasOne("prezentacja_cis.Models.Room", "Room")
                         .WithMany("Messsages")
-                        .HasForeignKey("RoomId");
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }
