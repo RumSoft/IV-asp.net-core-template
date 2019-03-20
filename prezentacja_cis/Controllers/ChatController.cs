@@ -1,30 +1,25 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using AutoMapper;
 using FluentValidation;
 using FluentValidation.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using prezentacja_cis.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace prezentacja_cis.Controllers
 {
     [Route("[controller]")]
     public class ChatController
     {
-        public ChatController()
-        {
-
-        }
-
         [HttpGet("{roomId}")]
         public IEnumerable<MessageEntity> Messages(int roomId)
         {
             using (var ctx = new ChatContext())
             {
                 var room = ctx.Rooms
-                    .Include(x=>x.Messsages)
+                    .Include(x => x.Messsages)
                     .FirstOrDefault(r => r.Id == roomId);
                 if (room == null)
                     return new MessageEntity[0];
@@ -33,14 +28,14 @@ namespace prezentacja_cis.Controllers
             }
         }
 
-        [HttpGet()]
+        [HttpGet]
         public IEnumerable<object> Rooms()
         {
-            using(var ctx = new ChatContext())
+            using (var ctx = new ChatContext())
             {
-                return ctx.Rooms.ToList().Select((x, i) => new { x.Id, x.Name });
+                return ctx.Rooms.ToList().Select((x, i) => new {x.Id, x.Name});
             }
-        } 
+        }
 
         [HttpPost("{roomId}/[action]")]
         public IActionResult SendMessage(int roomId, MessageEntity m)
@@ -79,8 +74,6 @@ namespace prezentacja_cis.Controllers
                 return new OkResult();
             }
         }
-
-
     }
 
     [Validator(typeof(MessageEntityValidator))]
