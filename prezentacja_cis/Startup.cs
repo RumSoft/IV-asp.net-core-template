@@ -30,13 +30,14 @@ namespace prezentacja_cis
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<MessageEntityValidator>());
             
-            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new Info {Title = "My API", Version = "v1"}); });
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info {Title = "My API", Version = "v1"});
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
             app
                 .UseSwagger()
                 .UseSwaggerUI(c =>
